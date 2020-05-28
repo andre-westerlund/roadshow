@@ -1,0 +1,26 @@
+{
+  "name": "roadshow",
+  "version": "1.0.0",
+  "description": "Roadshow Village-To-Village Sim Activation/Churn Backend API",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/andre-westerlund/roadshow.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/andre-westerlund/roadshow/issues"
+  },
+  "homepage": "https://github.com/andre-westerlund/roadshow#readme",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "mongoose": "^5.9.16",
+    "passport": "^0.4.1",
+    "passport-local-mongoose": "^6.0.1"
+  }
+}
