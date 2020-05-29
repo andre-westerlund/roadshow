@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+var passportLocalMongoose = require("passport-local-mongoose");
 
 const agentSchema = new mongoose.Schema({
     code: {type: String, unique: true, required: true},
@@ -8,5 +9,5 @@ const agentSchema = new mongoose.Schema({
     dateJoined: Date,
     leadId: {type: mongoose.Schema.Types.ObjectId, ref: "Lead"}
 });
-
+agentSchema.plugin(passportLocalMongoose)
 module.exports = mongoose.model("Agent", agentSchema);
