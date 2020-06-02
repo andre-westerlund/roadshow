@@ -7,7 +7,8 @@ const agentSchema = new mongoose.Schema({
     firstName: String,
     lastName: String,
     dateJoined: Date,
-    leadId: {type: mongoose.Schema.Types.ObjectId, ref: "Lead"}
+    lead: {type: mongoose.Schema.Types.ObjectId, ref: "Lead"}
 });
+agentSchema.index({firstName: 1, lastName: 1}, { unique: true})
 agentSchema.plugin(passportLocalMongoose)
 module.exports = mongoose.model("Agent", agentSchema);

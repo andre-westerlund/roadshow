@@ -9,11 +9,15 @@ const   express       = require("express"),
 dotenv.config();
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(bodyParser.json({extended:true}));
+
+//PASSPORT CONFIG
 app.use(require("express-session")({
-    secret : EXPRESS_SESSION_SECRET,
+    secret : process.env.EXPRESS_SESSION_SECRET,
     resave : false,
     saveUninitialized : false
 }));
+app.use(passport.initialize());
+app.use(passport.session());
 
 //DATABASE CONFIG
 var mongoose = require('mongoose');
@@ -34,11 +38,15 @@ const   userRoutes     = require("./routes/user"),
         villageRoutes  = require("./routes/village"),
         activityRoutes = require("./routes/activity"); 
 
-app.use('/api/user', userRoutes);
+//app.use('/api/user', userRoutes);
 app.use('/api/lead', leadRoutes);
 app.use('/api/agent', agentRoutes);
 app.use('/api/village', villageRoutes);
-app.use('/api/activity', activityRoutes);
+//app.use('/api/activity', activityRoutes);
+
+app.use('/', (req,res) => {
+    res.status(404).send("Not found")
+})
 
 //LISTEN
 app.listen(process.env.PORT, function(){

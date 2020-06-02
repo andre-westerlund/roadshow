@@ -1,12 +1,11 @@
 const mongoose = require("mongoose");
 
 const villageSchema = new mongoose.Schema({
-
-    code : { type: number, unique: true, required: true},
-    district: string,
-    island: string,
-    type: string,
-    name: string
+    code : { type: String, unique: true, required: true},
+    district: String,
+    island: String,
+    type: String,
+    name: String
 
 });
 
