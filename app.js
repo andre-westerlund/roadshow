@@ -3,14 +3,18 @@ const   express       = require("express"),
         bodyParser    = require("body-parser"),
         dotenv        = require('dotenv'),
         passport      = require("passport"),
-        LocalStrategy = require("passport-local");
+        cors          = require("cors"),
+        LocalStrategy = require("passport-local").Strategy;
+
+//MODELS FOR AUTHENTICATION
+const User = require("./models/user");
+const Agent = require("./models/agent");
         
 //APPLICATION CONFIG
 dotenv.config();
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(bodyParser.json({extended:true}));
-
-//PASSPORT CONFIG
+app.use(cors());
 app.use(require("express-session")({
     secret : process.env.EXPRESS_SESSION_SECRET,
     resave : false,
@@ -18,6 +22,17 @@ app.use(require("express-session")({
 }));
 app.use(passport.initialize());
 app.use(passport.session());
+
+//PASSPORT CONFIG
+passport.use('agentLocal', new LocalStrategy(Agent.authenticate()));
+passport.use('userLocal', new LocalStrategy(User.authenticate()));
+passport.serializeUser((user, done) => { 
+    done(null, user);
+});
+passport.deserializeUser((user, done) => {
+    if(user!=null)
+      done(null,user);
+});
 
 //DATABASE CONFIG
 var mongoose = require('mongoose');
@@ -38,14 +53,14 @@ const   userRoutes     = require("./routes/user"),
         villageRoutes  = require("./routes/village"),
         activityRoutes = require("./routes/activity"); 
 
-//app.use('/api/user', userRoutes);
+app.use('/api/user', userRoutes);
 app.use('/api/lead', leadRoutes);
 app.use('/api/agent', agentRoutes);
 app.use('/api/village', villageRoutes);
 //app.use('/api/activity', activityRoutes);
 
 app.use('/', (req,res) => {
-    res.status(404).send("Not found")
+    res.status(404).send("The resource you are requesting can not be found")
 })
 
 //LISTEN
