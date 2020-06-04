@@ -2,7 +2,7 @@ const User = require("../models/user");
 const Agent = require("../models/agent");
 
 exports.userLoggedIn = (req, res, next) => {
-    if(req.isAuthenticated()){
+    if(req.isAuthenticated() && !req.user.code){
         return next();
     }
     res.status(401).send("You are not authorized to access this resource");
@@ -16,9 +16,8 @@ exports.userNotLoggedIn = (req, res, next) => {
     
 } 
 
-
 exports.agentLoggedIn = (req, res, next) => {
-    if(req.isAuthenticated()){
+    if(req.isAuthenticated() && req.user.code){
         return next();
     }
     res.status(401).send("You are not authorized to access this resource");

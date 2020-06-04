@@ -46,48 +46,71 @@ exports.getLeadAgents = (req, res, next) => {
 //api/lead/:id/agents/:code
 exports.removeAgent = async (req, res, next) => {
     var agentCode = req.params.code;
-    var agent = await Agent.findOne({code: agentCode});
-    Lead.updateOne({_id: req.params.id}, 
-        { $pull: {
-            'agents': agent._id
-        }})
-    .then(updatedLead => {
-        res.status(200).json({message: `Successfully Removed Agent-${agentCode} from Lead-${req.params.id}`})
-    }) 
-    .catch(err => {
-        res.status(500).json({
-            message: `Error: ${err}`
-        });
-    });
+    var leadId = req.params.id;
+    var lead = await Lead.findById(leadId);
+    var agentList = lead.agents;
+    try{
+        var agent;
+        var desiredAgent;
+        if(req.query.isId){
+            agent = agentCode
+            desiredAgent = agentList.find(item => item == agent);
+        }else{
+            agent = await Agent.findOne({code: agentCode});
+            desiredAgent = agentList.find(item => item == agent._id);
+        }  
+        
+        var indexOfDesiredAgent = agentList.indexOf(desiredAgent);
+        agentList.splice(indexOfDesiredAgent, 1);
+        lead.save();
+        if(!req.query.isId){
+            //Removes Lead Field in Agent
+            agent.lead = null;
+            agent.save();
+        }
+        res.status(200).json({message: `Successfully removed Agent ${agentCode} from Agent List of ${lead.firstName} ${lead.lastName} (${lead._id})`});
+    }catch(err){
+        console.log(err)
+        return res.json({error: err, message: "Bad Request"})
+    }
 }
 
 //ADD AN AGENT TO A LEAD
 //api/lead/:id/agents/:code
-exports.addAgent = (req, res, next) => {
+exports.addAgent = async (req, res, next) => {
     var agentCode = req.params.code;
-    Lead.findOne({_id: req.params.id}).then(foundLead => {
-        Agent.findOne({code: agentCode}).then(foundAgent => {
-            if(foundAgent.lead){
-                return res.status(500).json({message:"That Agent already has an existing Lead"});
-            }
-            foundLead.agents.push(foundAgent);
-            foundLead.save((err, savedLead) => {
-                if(err){
-                    res.status(500).json({
-                        message: `Error: ${err}`
-                    });
-                }else{
-                    res.status(200).json({
-                        message: `Successfully Added Agent-${agentCode} to Lead-${savedLead._id}`
-                    });
-                }
+    var leadId = req.params.id;
+    try{
+        var agent = await Agent.findOne({code: agentCode});
+        var lead = await Lead.findById(leadId);
+        //If Changing Lead of Agent, Remove Agent From Old Lead's List of Agents
+        if(agent.lead.toString() !== lead._id.toString()){
+            console.log(`Agent.Lead - ${agent.lead} - TYPE ${typeof agent.lead}`)
+            console.log(`Lead._ID - ${lead._id} - TYPE ${typeof lead._id}`)
+            var oldLead = await Lead.findById(agent.lead);
+            var listOfAgents = oldLead.agents;
+            var agentInList = listOfAgents.find(item => item == agent._id);
+            listOfAgents.splice(listOfAgents.indexOf(agentInList), 1);
+            oldLead.save();
+        }
+        //Checking if Agent is already in Lead List
+        if(lead.agents.includes(agent._id))
+        {
+            res.status(400).json({
+                message: `Bad Request, Agent-${agentCode} is already in Lead ${lead.firstName} ${lead.lastName} (${lead._id}) Agent List`
             });
-        })
-    }).catch(err => {
-        res.status(500).json({
-            message: `Error: ${err}`
-        });
-    })
+        }else{
+            lead.agents.push(agent);
+            lead.save();
+            agent.lead = lead;
+            agent.save();
+            res.status(200).json({
+                message: `Successfully Added Agent-${agentCode} to Lead ${lead.firstName} ${lead.lastName} (${lead._id}) Agent List`
+            });
+        }
+    }catch(err){
+        res.json({error: err, message: "There was an issue adding the Agent to Lead List"})
+    }
 }
 
 //CREATE A NEW LEAD
