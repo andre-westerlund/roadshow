@@ -57,7 +57,7 @@ app.use('/api/user', userRoutes);
 app.use('/api/lead', leadRoutes);
 app.use('/api/agent', agentRoutes);
 app.use('/api/village', villageRoutes);
-//app.use('/api/activity', activityRoutes);
+app.use('/api/activity', activityRoutes);
 
 app.use('/', (req,res) => {
     res.status(404).send("The resource you are requesting can not be found")

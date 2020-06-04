@@ -3,6 +3,7 @@ const passport = require("passport");
 
 const Agent = require("../models/agent");
 const Lead = require("../models/lead");
+const Village = require("../models/village");
 
 //GET ALL AGENTS
 exports.getAgents = (req, res, next) => {
@@ -110,5 +111,24 @@ exports.login = (req, res, next) => {
 // /api/agent/logout
 exports.logout = (req, res, next) => {
     req.logout();
+    req.session.village = null;
     res.status(200).json({success: true, message: "Logout Success!"})
+}
+
+//AGENT SET VILLAGE FOR SESSION
+// /api/agent/village/:villageId
+exports.setVillage = (req,res,next) => {
+    Village.findById(req.params.villageId).then(foundVillage => {
+        req.session.village = foundVillage;
+        res.status(200).json({
+            success: true,
+            message: `${village.name} set for Activity`,
+            village: foundVillage
+        })
+    }).catch(err => {
+        res.status(401).json({
+            message: "Bad Request. Village does not exist",
+            error: err
+        })
+    })
 }

@@ -1,14 +1,19 @@
 const router = require("express").Router();
+const auth = require("../middleware/auth");
 const AgentController = require("../controllers/agent");
 
-router.get("/", AgentController.getAgents);
-router.get("/:code", AgentController.getAgent);
-router.post("/", AgentController.createAgent);
-router.put("/:code", AgentController.updateAgent);
-router.delete("/:code", AgentController.deleteAgent);
+
+router.get("/", auth.userLoggedIn, AgentController.getAgents);
+router.get("/:code", auth.isAuthenticated, AgentController.getAgent);
+router.post("/",auth.userLoggedIn, AgentController.createAgent);
+router.put("/:code", auth.userLoggedIn, AgentController.updateAgent);
+router.delete("/:code", auth.userLoggedIn, AgentController.deleteAgent);
 
 //auth
-router.post("/auth/login", AgentController.login);
-router.get("/auth/logout", AgentController.logout);
+router.post("/auth/login",auth.agentNotLoggedIn, AgentController.login);
+router.get("/auth/logout",auth.agentLoggedIn, AgentController.logout);
+
+router.post("/village/:villageId", auth.agentLoggedIn, AgentController.setVillage)
+
 
 module.exports = router;
