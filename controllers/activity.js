@@ -8,7 +8,12 @@ const activityMethods = require("../middleware/activity");
 // GET ALL ACTIVITIES
 // /api/activity
 exports.getActivities = (req,res,next) => {
-    Activity.find({}).then(activities => {
+    var q = {}
+    if(req.user.code){
+        q = activityMethods.getTodayQuery(req.user._id);
+    }
+
+    Activity.find(q).then(activities => {
         res.status(200).json(activities);
     }).catch(err => {
         res.status(500).json(err);
@@ -28,6 +33,7 @@ exports.getActivity = (req, res, next) => {
 //CREATE ACTIVITY
 // api/activity
 exports.createActivity = async (req,res,next) => {
+    if(!req.session.village) return res.status(400).json({message:"Please set a Village first"})
     try{
         //Automated Details
         var now = new Date();
@@ -37,7 +43,7 @@ exports.createActivity = async (req,res,next) => {
         var agentType = activityMethods.getAgentType(now, agent.dateJoined);
 
         //Manual Details
-        var details = req.body.activity;
+        var details = req.body.details;
 
         const activity = new Activity({
             date: now,
@@ -66,11 +72,24 @@ exports.createActivity = async (req,res,next) => {
 // api/activity/:id
 exports.updateActivity = (req,res,next) => {
     var changes = req.body.changes;
+    Activity.findByIdAndUpdate(req.params.id, changes, (err, foundActivity)=> {
+        if(err || !foundActivity){
+            res.status(500).json({message:"Failed to update activity"});
+        }else{
+            res.status(200).json({message:"Updated Activity Successfully"})
+        }
+    });
 }
 
 //DELETE ACTIVITY
 // api/activity/:id
 exports.deleteActivity = (req, res, next) => {
-
+    Activity.findByIdAndDelete(req.params.id, (err)=> {
+        if(err){
+            res.status(500).json({message:"Failed to delete activity"});
+        }else{
+            res.status(200).json({message:"Activity Deleted Successfully"})
+        }
+    });
 }
 

@@ -4,6 +4,7 @@ const   express       = require("express"),
         dotenv        = require('dotenv'),
         passport      = require("passport"),
         cors          = require("cors"),
+        auth          = require("./middleware/auth"),
         LocalStrategy = require("passport-local").Strategy;
 
 //MODELS FOR AUTHENTICATION
@@ -44,8 +45,6 @@ var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
-
-
 //DEFINE ROUTES
 const   userRoutes     = require("./routes/user"),
         leadRoutes     = require("./routes/lead"),
@@ -59,7 +58,7 @@ app.use('/api/agent', agentRoutes);
 app.use('/api/village', villageRoutes);
 app.use('/api/activity', activityRoutes);
 
-app.use('/', (req,res) => {
+app.use('/', auth.isAuthenticated, (req,res) => {
     res.status(404).send("The resource you are requesting can not be found")
 })
 

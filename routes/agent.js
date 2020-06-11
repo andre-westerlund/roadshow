@@ -14,6 +14,7 @@ router.post("/auth/login",auth.agentNotLoggedIn, AgentController.login);
 router.get("/auth/logout",auth.agentLoggedIn, AgentController.logout);
 
 router.post("/village/:villageId", auth.agentLoggedIn, AgentController.setVillage)
+router.get("/village/current", auth.agentLoggedIn, AgentController.getVillage)
 
 
 module.exports = router;

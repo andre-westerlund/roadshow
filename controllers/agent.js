@@ -98,7 +98,7 @@ exports.deleteAgent = async (req, res, next) => {
 exports.login = (req, res, next) => {
     passport.authenticate('agentLocal', function(err, agent, info) {
         if (err) { return next(err); }
-        if (!agent) { return res.status(404).send("Agent Not found"); }
+        if (!agent) { return res.status(404).json("Incorrect Agent Code/Password"); }
         req.logIn(agent, function(err) {
           if (err) { return next(err); }
           return res.status(200).json({message: "Login Success!",user: req.user})
@@ -122,13 +122,24 @@ exports.setVillage = (req,res,next) => {
         req.session.village = foundVillage;
         res.status(200).json({
             success: true,
-            message: `${village.name} set for Activity`,
+            message: `${foundVillage.name} set for Activity`,
             village: foundVillage
         })
     }).catch(err => {
+        console.log(err)
         res.status(401).json({
             message: "Bad Request. Village does not exist",
             error: err
         })
     })
+}
+
+//GET CURRENT VILLAGE OF AGENT
+// /api/agent/village/
+exports.getVillage = (req,res,next) => {
+    if(req.session.village){
+        res.status(200).json(req.session.village)
+    }else{
+        res.status(404).json({message:"No Village currently set."});
+    }
 }
