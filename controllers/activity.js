@@ -43,7 +43,7 @@ exports.createActivity = async (req,res,next) => {
         var agentType = activityMethods.getAgentType(now, agent.dateJoined);
 
         //Manual Details
-        var details = req.body.details;
+        var details = req.body;
 
         const activity = new Activity({
             date: now,
