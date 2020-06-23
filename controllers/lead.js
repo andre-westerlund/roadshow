@@ -3,17 +3,13 @@ const Agent = require("../models/agent");
 
 //GET ALL LEADS
 exports.getLeads = (req, res, next) => {
-    Lead.find({}, (err, leads) => {
-        if(err){
-            res.status(500).json({
-                message: `Error: ${err}\nFetching Leads failed`
-            });
-        }else{
-            res.status(200).json({
-                leads
-            });
-        }
-    });
+    Lead.find().populate('agents').exec().then(leads => {
+       res.status(200).json({leads});
+    }).catch(err => {
+       res.status(500).json({
+            message: `Error: ${err}\nFetching Leads failed`
+        });
+     });
 }
 
 //GET LEAD
@@ -85,8 +81,6 @@ exports.addAgent = async (req, res, next) => {
         var lead = await Lead.findById(leadId);
         //If Changing Lead of Agent, Remove Agent From Old Lead's List of Agents
         if(agent.lead.toString() !== lead._id.toString()){
-            console.log(`Agent.Lead - ${agent.lead} - TYPE ${typeof agent.lead}`)
-            console.log(`Lead._ID - ${lead._id} - TYPE ${typeof lead._id}`)
             var oldLead = await Lead.findById(agent.lead);
             var listOfAgents = oldLead.agents;
             var agentInList = listOfAgents.find(item => item == agent._id);
@@ -139,7 +133,10 @@ exports.createLead = (req,res,next) => {
 //UPDATE EXISTING LEAD
 //api/lead/:id
 exports.updateLead = (req,res,next) => {
-    var changes = req.body;
+    var changes = {
+        firstName: req.body.firstName,
+        lastName:req.body.lastName
+    };
     Lead.updateOne({_id: req.params.id}, changes, (err, updatedLead) => {
         if(err || !updatedLead){
             res.status(500).json({
@@ -163,11 +160,17 @@ exports.deleteLead = (req,res,next) => {
                 message: `Error: ${err}\nThere was an error deleting the Lead`
             });
         }else{
-            //TODO
             //Remove this lead from all the agents 
-            res.status(200).json({
-                message: `Lead Deleted Successfully`
-            });
+            Agent.updateMany({lead: req.params.id}, {"$set":{ lead: null}}).then(response => {
+                res.status(200).json({
+                    message: `Lead Deleted Successfully`
+                });  
+            }).catch(err => {
+                res.status(500).json({
+                    message:`Could not remove Lead from Agents`,
+                    error: err.toString()
+                });
+            })
         }
     })
 }

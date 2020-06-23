@@ -32,7 +32,7 @@ exports.getVillage = (req, res, next) => {
 //CREATE A NEW VILLAGE
 exports.createVillage = (req,res,next) => {
     var village = new Village({
-        code: req.body.code,
+        code: Number(req.body.code),
         district: req.body.district,
         island: req.body.island,
         type: req.body.type,
@@ -56,8 +56,13 @@ exports.createVillage = (req,res,next) => {
 }
 //UPDATE EXISTING VILLAGE
 exports.updateVillage = (req,res,next) => {
-    var changes = req.body;
-    Village.updateOne({code: req.params.code}, changes, (err, updatedVillage) => {
+    var changes = {
+      name : req.body.name,
+      type: req.body.type,
+      district: req.body.district,
+      island: req.body.island
+    };
+    Village.updateOne({_id: req.params.code}, changes, (err, updatedVillage) => {
         if(err || !updatedVillage){
             res.status(500).json({
                 message: `Error: ${err}\nThere was an error updating the Village`
@@ -73,7 +78,7 @@ exports.updateVillage = (req,res,next) => {
 
 //DELETE A VILLAGE
 exports.deleteVillage = (req,res,next) => {
-    Village.deleteOne({code: req.params.code}, (err) => {
+    Village.deleteOne({_id: req.params.code}, (err) => {
         if(err){
             res.status(500).json({
                 message: `Error: ${err}\nThere was an error deleting the Village`

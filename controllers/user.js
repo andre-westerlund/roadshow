@@ -2,7 +2,7 @@ const User = require("../models/user");
 
 //GET ALL USERS
 exports.getUsers = (req, res, next) => {
-    User.find({}).then(users => {
+    User.find({ _id: {$ne: req.user._id}}).then(users => {
         res.status(200).json(users);
     }).catch(err => {
         res.status(500).json(err);
@@ -49,6 +49,7 @@ exports.login = (req,res,next) => {
 //LOGOUT USER
 // GET /api/user/auth/logout
 exports.logout = (req,res,next) => {
+    req.session.destroy();
     req.logout();
     res.status(200).json({success: true, message: "Logout Success!"})
 }

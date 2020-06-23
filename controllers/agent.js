@@ -7,7 +7,7 @@ const Village = require("../models/village");
 
 //GET ALL AGENTS
 exports.getAgents = (req, res, next) => {
-    Agent.find({}).then(agents => {
+    Agent.find().populate('lead').then(agents => {
         res.status(200).json(agents);
     }).catch(err => {
         res.status(500).json(err);
@@ -27,7 +27,7 @@ exports.getAgent = (req,res,next) => {
 //CREATE AGENT
 // /api/agent
 exports.createAgent = async (req,res,next) => {
-    var lead = await Lead.findById(req.body.leadId);
+    var lead = await Lead.findById(req.body.lead);
     if(lead == null || lead == undefined){
         return res.status(401).json({message:"Please provide an existing Lead"})
     }
@@ -38,17 +38,23 @@ exports.createAgent = async (req,res,next) => {
         dateJoined: new Date(req.body.dateJoined),
         lead: lead
     };
-
     Agent.register(agent, req.body.password, (err, registeredAgent) => {
         if(err || !registeredAgent){
-            res.status(500).json({message:"There was an error creating the Agent", error: err})
+            res.status(500).json({message:"There was an error creating the Agent", error: err.toString()})
         }else{
             //ADD AGENT TO LEAD LIST
-            request.post(process.env.BASE_URL +`/lead/${lead._id}/agents/${registeredAgent.code}`, (err, response, body) => {
-                if(err){
-                    res.status(500).json({error: err, message: "Adding Agent to Lead failed"})
+            const options = {
+                url: process.env.BASE_URL +`/lead/${lead._id}/agents/${registeredAgent.code}`,
+                headers: {
+                    "Cookie": `roadshow_sid=${req.cookies['roadshow_sid']}; Path=/; HttpOnly;`
+                },
+                body: ""
+            };
+            request.post(options,(err, response, body) => {
+                if(err || (response.statusCode != 200 && response.statusCode != 201) ){
+                    res.status(500).json({error: err, message: "Adding Agent to Lead failed", body: body})
                 }else{
-                    res.status(200).json({code: registeredAgent.code, lead_id: lead._id ,success: true, message: `Created Agent ${registeredAgent.code} successfully. Added to Agent List of ${lead.firstName} ${lead.lastName} (${lead._id})`});
+                    res.status(200).json({message: `Created Agent ${registeredAgent.code} successfully. Added to Agent List of ${lead.firstName} ${lead.lastName} (${lead._id})`});
                 }
             });  
         }
@@ -57,13 +63,55 @@ exports.createAgent = async (req,res,next) => {
 
 //UPDATE AGENT
 // /api/agent/:code
-exports.updateAgent = (req,res,next) => {
-    var changes = req.body;
-    Agent.updateOne({code: req.params.code}, changes).then(updatedAgent => {
-        res.status(200).json({message: "Agent Updated Successfully"})
+exports.updateAgent = async (req,res,next) => {
+try{
+    var lead = await Lead.findById(req.body.lead);
+    var agent = await Agent.findOne({code: req.params.code});
+    
+    var changes = {
+      code: req.body.code,
+      firstName: req.body.firstName,
+      lastName: req.body.lastName,
+      dateJoined: req.body.dateJoined
+    };
+    
+    var passChange = "";
+    Agent.findOneAndUpdate({code: req.params.code}, changes, {new: true}).then(updatedAgent => {
+    console.log(updatedAgent)
+        //IF NEW PASSWORD SET FOR AGENT
+        if(req.body.password != null && req.body.password != ""){
+          updatedAgent.setPassword(req.body.password , function(){
+          updatedAgent.save();
+          passChange+= " & Password Updated Successfully."
+        });
+       }
+        //IF NEW LEAD
+        if(lead._id.toString() !== agent.lead.toString()){
+         //ADD AGENT TO LEAD LIST
+            const options = {
+                url: process.env.BASE_URL +`/lead/${lead._id}/agents/${updatedAgent.code}`,
+                headers: {
+                    "Cookie": `roadshow_sid=${req.cookies['roadshow_sid']}; Path=/; HttpOnly;`
+                },
+                body: ""
+            };
+            request.post(options,(err, response, body) => {
+                if(err || (response.statusCode != 200 && response.statusCode != 201) ){
+                    res.status(500).json({error: err, message: "Adding Agent to Lead failed", body: body})
+                }else{
+                    res.status(200).json({message: `Updated Agent ${updatedAgent.code} successfully. ${passChange}. Added to Agent List of ${lead.firstName} ${lead.lastName} (${lead._id})`, body:body, response: response});
+                }
+            });
+        
+        }else{
+          res.status(200).json({message: "Agent Updated Successfully" })
+        }
     }).catch(err => {
-        res.status(500).json(err);
+        res.status(500).json(err.toString());
     })
+}catch(err){
+res.json({error: err.toString(), message: "There was an issue Updating Agent"})
+}
 }
 
 //DELETE AGENT
@@ -80,7 +128,7 @@ exports.deleteAgent = async (req, res, next) => {
     Agent.deleteOne({_id: agent._id}).then(function(){
         //DELETE AGENT FROM LEAD LIST
         request.delete(process.env.BASE_URL +`/lead/${lead._id}/agents/${agent._id}?isId=true`, (err, response, body) => {
-            if(err){
+            if(err && response.statusCode != 200 && response.statusCode != 201){
                 res.status(500).json({error: err, message: "Agent Deletion Success. Deleting Agent from Lead List failed"})
             }else{
                 res.status(200).json({message: `Agent Deletion Success. Agent ${agent.code} removed from Agent List of ${lead.firstName} ${lead.lastName} (${lead._id})`});

@@ -3,7 +3,7 @@ const auth = require("../middleware/auth");
 
 const VillageController = require("../controllers/village");
 
-router.get("/", auth.isAuthenticated, VillageController.getVillages);
+router.get("/",auth.isAuthenticated, VillageController.getVillages);
 router.get("/:code", auth.userLoggedIn, VillageController.getVillage);
 router.post("/", auth.userLoggedIn, VillageController.createVillage);
 router.put("/:code", auth.userLoggedIn, VillageController.updateVillage);

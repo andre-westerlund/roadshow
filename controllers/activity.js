@@ -13,7 +13,7 @@ exports.getActivities = (req,res,next) => {
         q = activityMethods.getTodayQuery(req.user._id);
     }
 
-    Activity.find(q).then(activities => {
+    Activity.find(q).populate("village").then(activities => {
         res.status(200).json(activities);
     }).catch(err => {
         res.status(500).json(err);
