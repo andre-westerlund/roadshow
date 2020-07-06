@@ -21,13 +21,22 @@ exports.getUser = (req,res,next) => {
 
 //UPDATE USER
 // /api/user/:id
-exports.updateUser = (req,res,next) => {
+exports.updateUser = async function(req,res,next){
     var changes = req.body;
-    User.updateOne({_id: req.params.id}, changes).then(updatedUser => {
+    try {
+    User.findOneAndUpdate({_id: req.params.id}, changes,{new: true}).then(updatedUser => {
+        if(req.body.password != null && req.body.password != ""){
+          updatedUser.setPassword(req.body.password, function(){
+            updatedUser.save();
+          });
+        }
         res.status(200).json({message: "User Updated Successfully"})
     }).catch(err => {
-        res.status(500).json(err);
+        res.status(500).json(err.toString());
     })
+    }catch(err){
+        res.status(500).json(err.toString());
+    }
 }
 
 //DELETE USER

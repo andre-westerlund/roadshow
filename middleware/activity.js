@@ -24,3 +24,27 @@ exports.getTodayQuery = (agentId) => {
 
 }
 
+exports.getRevenue = (details) => {
+
+var handsetPrice = details.handsetPrice;
+var paidTopup = details.paidTopUp;
+
+if(handsetPrice != null && handsetPrice != ""){
+  handsetPrice = Number(handsetPrice);
+}else{
+  handsetPrice = 0;
+}
+
+if(paidTopup != null && paidTopup != ""){
+  paidTopup = Number(paidTopup);
+}else{
+  paidTopup = 0;
+}
+
+return handsetPrice + paidTopup;
+
+
+
+
+}
+

@@ -15,13 +15,14 @@ const activitySchema = new mongoose.Schema({
             firstName: String,
             lastName: String
         },
-        oldNumber: Number,
+        oldNumber: {type: Number, unique: true, sparse: true},
         newVodafoneNumber: Number,
         paidTopUp: Number,
         deviceType: String,
         handsetModel: String,
         handsetPrice: Number,
-        freeOffer: String
+        freeOffer: String,
+        revenue: Number
     }
 });
 

@@ -8,12 +8,7 @@ const activityMethods = require("../middleware/activity");
 // GET ALL ACTIVITIES
 // /api/activity
 exports.getActivities = (req,res,next) => {
-    var q = {}
-    if(req.user.code){
-        q = activityMethods.getTodayQuery(req.user._id);
-    }
-
-    Activity.find(q).populate("village").then(activities => {
+    Activity.find({}).populate("village").populate("agent").populate("lead").exec().then(activities => {
         res.status(200).json(activities);
     }).catch(err => {
         res.status(500).json(err);
@@ -44,6 +39,7 @@ exports.createActivity = async (req,res,next) => {
 
         //Manual Details
         var details = req.body;
+        details.revenue = activityMethods.getRevenue(details);
 
         const activity = new Activity({
             date: now,
