@@ -58,7 +58,8 @@ const   userRoutes     = require("./routes/user"),
         leadRoutes     = require("./routes/lead"),
         agentRoutes    = require("./routes/agent"),
         villageRoutes  = require("./routes/village"),
-        activityRoutes = require("./routes/activity"); 
+        activityRoutes = require("./routes/activity"),
+        mtalaActivityRoutes = require("./routes/mtala-activity"); 
 
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Credentials', true);
@@ -73,6 +74,7 @@ app.use('/api/lead', leadRoutes);
 app.use('/api/agent', agentRoutes);
 app.use('/api/village', villageRoutes);
 app.use('/api/activity', activityRoutes);
+app.use('/api/mtala', mtalaActivityRoutes);
 
 app.use('/', (req,res) => {
     res.status(404).send("The resource you are requesting cannot be found")
