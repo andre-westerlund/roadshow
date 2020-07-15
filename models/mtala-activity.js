@@ -11,10 +11,10 @@ const mtalaActivitySchema = new mongoose.Schema({
         customer: {
             firstName: {type: String, required:true},
             lastName: {type: String, required: true},
-            dob: { type: Date, required: true},
-            id: {type: String, unique: true}
+            dob: { type: Date, required: true}
         },
         newVodafoneNumber: {type: Number, unique: true},
+        village: {type: String, required: true},
         photoId: String,
         signature: String,
         mtalaActivityType: String

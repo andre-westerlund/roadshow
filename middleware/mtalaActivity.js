@@ -39,15 +39,16 @@ const nodemailer = require('nodemailer');
     const email = 
         `
         Date of Registration: ${activity.date}
-        Date of Birth: ${activity.details.customer.dob}
-        Customer: ${activity.details.customer.firstName} ${activity.details.customer.lastName}
-        Customer Id: ${activity.details.customer.id}
+        Village of Registration: ${activity.village.name}
+        AGENT: ${activity.agentName}
 
-        CONTACT INFO
-        ******************************
+        -----------------------------------------
+
+        First Name: ${activity.details.customer.firstName} 
+        Last Name: ${activity.details.customer.lastName}
         Mobile Number: ${activity.details.newVodafoneNumber}
-        ******************************
-        
+        Date of Birth: ${activity.details.customer.dob}
+        Village: ${activity.details.village}
         
         IDENTIFICATION
         ******************************
@@ -55,7 +56,7 @@ const nodemailer = require('nodemailer');
         Digital Signature: Attached
         ******************************
         
-        AGENT: ${activity.agentName}
+        
         
         -
         This is an automated email from the Roadshow App Server

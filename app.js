@@ -60,7 +60,7 @@ const   userRoutes     = require("./routes/user"),
         villageRoutes  = require("./routes/village"),
         activityRoutes = require("./routes/activity"),
         mtalaActivityRoutes = require("./routes/mtala-activity"); 
-
+app.use('/api/public/m-tala',express.static('m-tala'));
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Credentials', true);
   res.header('Access-Control-Allow-Methods', 'GET, PUT, POST, DELETE');
